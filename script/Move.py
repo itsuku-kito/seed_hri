@@ -44,38 +44,6 @@ class MoveService:
         #動作が完了したときに送信するトピック
         self.comp_pub = rospy.Publisher(self.robotname + '/completed_command', completed , queue_size=1)
 
-        self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-        rospy.Subscriber('/odom', Odometry, self.odom_callback)
-
-        
-        
-        # 移動の目標相対座標
-        self.relative_target_x = 0.30  # x方向の相対移動距離
-        self.relative_target_y = 0   # y方向の相対移動距離
-        self.relative_target_yaw = 0
-        # 初期位置
-        self.start_x = None
-        self.start_y = None
-        self.current_x = 0.0
-        self.current_y = 0.0
-
-        # PI制御用の変数
-        self.Kp = 0.5  # 比例ゲイン
-        self.Ki = 0.1  # 積分ゲイン
-        self.error_sum_x = 0.0
-        self.error_sum_y = 0.0
-        self.last_time = rospy.Time.now().to_sec()
-        self.error_x = 0.0
-        
-        self.target_x = 2200
-        self.target_y =  200
-        self.target_yaw = 0
-
-        self.target_rad = 0
-        self.target_dir = 0
-
-        self.comp_state = "READY"
-        rospy.loginfo(f'Componemt status: {self.comp_state}')
 
         rospy.loginfo("Move  is ready.")
 
@@ -118,19 +86,6 @@ class MoveService:
             print(value)
             return move_set_paramResponse(value)  
 
-
-    def odom_callback(self, msg):
-        """現在のx, y座標を取得"""
-        self.current_x = msg.pose.pose.position.x
-        self.current_y = msg.pose.pose.position.y
-
-        # 初期位置の設定
-        if self.start_x is None:
-            self.start_x = self.current_x
-            self.start_y = self.current_y
-            rospy.loginfo(f"Start position: ({self.start_x}, {self.start_y})")
-
-
     #コマンド実行の関数
     def execute(self, goal):
         #コンポーネントをBUSY状態にする
@@ -172,71 +127,11 @@ class MoveService:
 
     def move_robot(self):
         # ロボットを動かす処理
-        rate = rospy.Rate(10)  # 10Hzでループ
-        velocity = Twist()
-        print(f"x: {self.current_x},  y: {self.current_y}")
-        print(f"x: {self.start_x},  y: {self.start_y}")
+
 
         self.status = "moving"
         rospy.loginfo(self.status)
 
-        while not rospy.is_shutdown():
-            # 移動距離の誤差を計算
-            error_x = (self.start_x + self.relative_target_x) - self.current_x
-            error_y = (self.start_y + self.relative_target_y) - self.current_y
-            # print(f"x: {self.current_x},")
- 
-
-            # 時間差を取得
-            current_time = rospy.Time.now().to_sec()
-            dt = current_time - self.last_time
-
-            # 積分誤差の更新
-            self.error_sum_x += error_x * dt
-            self.error_sum_y += error_y * dt
-
-            # PI制御で速度を計算
-            linear_x = self.Kp * error_x + self.Ki * self.error_sum_x
-            linear_y = self.Kp * error_y + self.Ki * self.error_sum_y
-
-            # 安全のため速度制限（-0.5 ~ 0.5 m/s）
-            linear_x = max(min(linear_x, 0.3), -0.3)
-            linear_y = max(min(linear_y, 0.3), -0.3)
-
-            # 目標位置を超えないように制御
-            if self.current_x + linear_x * 0.1 > (self.start_x + self.relative_target_x):
-                linear_x = 0  # 目標を超えたら速度を0にする
-
-            # 速度を設定
-            velocity.linear.x = linear_x
-            velocity.linear.y = linear_y
-            self.pub.publish(velocity)
-
-            # 誤差が小さければ停止
-            if abs(error_x) < 0.01 and abs(error_y) < 0.01:
-                rospy.loginfo(f"x: {self.current_x}, y: {self.current_y}")
-                self.start_x = self.current_x
-                self.start_y = self.current_y
-                rospy.loginfo("Reached target position.")
-                self.status = "completed"
-                break
-            
-            if self.status == "timeup" :
-                self.error_x = abs(error_x)
-                
-                self.start_x = self.current_x
-                self.start_y = self.current_y
-                break
-
-            # 時間を更新
-            self.last_time = current_time
-            rate.sleep()
-
-        # 最後に停止
-        
-        velocity.linear.x = 0.0
-        velocity.linear.y = 0.0
-        self.pub.publish(velocity)
         self.completed_command()
 
     def completed_command(self):
@@ -268,8 +163,8 @@ class MoveService:
     def start(self):        #ナビゲーションのゴールを設定
 
         self.state = "moving"
-        time_thread = threading.Thread(target=self.limit_time)
-        time_thread.start()
+        #time_thread = threading.Thread(target=self.limit_time)
+        #time_thread.start()
         move_thread = threading.Thread(target=self.move_robot)
         move_thread.start()
 
