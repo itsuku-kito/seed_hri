@@ -11,6 +11,7 @@ import threading
 import moveit_commander
 from rois_env.msg import *
 from rois_env.srv import *
+from rois_env.srv import MoveCommunication
 #発話用(クラス追加)
 
 OHAYO = "おはようございます"
@@ -35,11 +36,11 @@ class ApproachService:
         print(exe_name)
         self.server.start()     
 
-        self.pub = rospy.Publisher(self.robotname + '/completed_command', completed , queue_size=1)
-        # self.pub = rospy.Publisher('/completed', String,queue_size=1)
+        #self.pub = rospy.Publisher(self.robotname + '/completed_command', completed , queue_size=1)
+        self.pub = rospy.Publisher('/completed', completed, queue_size=1,latch=True)
 
         self.motion = rospy.ServiceProxy("/seed_robot_action", RobotAction)
-
+        self.move_seed = rospy.ServiceProxy('move_seed_noid', MoveCommunication)
 
 
         self.state = "idle"
@@ -107,7 +108,6 @@ class ApproachService:
         self.motion_thread = threading.Thread(target=self.monitor_playback)
         self.motion_thread.start()
         
-
         self.result.success = "True"
         self.server.set_succeeded(self.result)
 
@@ -119,6 +119,7 @@ class ApproachService:
 
         try:
             #service = self.motion("approach1")
+            #service = self.move_seed("")
             service.success = True
             print(service.success)
 
@@ -240,5 +241,4 @@ if __name__ == "__main__":
     rospy.init_node(node_name)
     service = ApproachService(robotname)
     service.run()
-
 
