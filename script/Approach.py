@@ -100,10 +100,13 @@ class ApproachService:
 
 
     def start(self):
+
+        
         self.state = "moving"
 
         self.motion_thread = threading.Thread(target=self.monitor_playback)
         self.motion_thread.start()
+        
 
         self.result.success = "True"
         self.server.set_succeeded(self.result)
@@ -115,7 +118,8 @@ class ApproachService:
         rospy.loginfo("Monitoring playback.")
 
         try:
-            service = self.motion("approach1")
+            #service = self.motion("approach1")
+            service.success = True
             print(service.success)
 
             if service.success==True:
