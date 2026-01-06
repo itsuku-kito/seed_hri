@@ -43,6 +43,7 @@ class MoveService:
         
         #動作が完了したときに送信するトピック
         self.comp_pub = rospy.Publisher(self.robotname + '/completed_command', completed , queue_size=1)
+        self.move_seed = rospy.ServiceProxy('/move_seed_noid', MoveCommunication)
 
 
         rospy.loginfo("Move  is ready.")

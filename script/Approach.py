@@ -40,7 +40,7 @@ class ApproachService:
         self.pub = rospy.Publisher('/completed', completed, queue_size=1,latch=True)
 
         self.motion = rospy.ServiceProxy("/seed_robot_action", RobotAction)
-        self.move_seed = rospy.ServiceProxy('move_seed_noid', MoveCommunication)
+        self.move_seed = rospy.ServiceProxy('/move_seed_noid', MoveCommunication)
 
 
         self.state = "idle"
@@ -119,12 +119,13 @@ class ApproachService:
 
         try:
             #service = self.motion("approach1")
-            #service = self.move_seed("")
-            service.success = True
-            print(service.success)
+            service = self.move_seed("")
+            #service.success = True
+            self.state = "OK"
+            #print(service.success)
 
-            if service.success==True:
-                self.state = "OK"
+            #if service.success==True:
+                #self.state = "OK"
 
         except Exception as e:
             print(f"Unexpected error: {e}")

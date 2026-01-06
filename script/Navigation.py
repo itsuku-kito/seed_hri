@@ -42,6 +42,7 @@ class executeServer:
         
         #動作が完了したときに送信するトピック
         self.pub = rospy.Publisher(self.robotname + '/completed_command', completed , queue_size=1)
+        self.nav_seed = rospy.ServiceProxy('/nav_seed_noid', MoveCommunication)
         
 
         
