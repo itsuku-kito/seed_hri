@@ -40,7 +40,7 @@ class ApproachService:
         self.pub = rospy.Publisher('/completed', completed, queue_size=1,latch=True)
 
         self.motion = rospy.ServiceProxy("/seed_robot_action", RobotAction)
-        self.move_seed = rospy.ServiceProxy('/move_seed_noid', MoveCommunication)
+        self.move_seed = rospy.ServiceProxy('/approach_seed_noid', MoveCommunication)
 
 
         self.state = "idle"

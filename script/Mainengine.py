@@ -356,8 +356,9 @@ class EngineService:
                             return bind_anyResponse("OK")
 
                         elif self.component_ref == "Navigation":
-                            self.BINDCOMP = self.component_ref 
+                            #self.BINDCOMP = self.component_ref 
                             self.target_position = [0.0,0.0,0.0,0.0,0.0,0.0,1.0]
+                            """
                             if self.is_service_available(get_name):
                                 rospy.loginfo(f"Service '{get_name}' already exists. Skipping...")
                             else:
@@ -368,6 +369,7 @@ class EngineService:
                             else:
                                 self.set_parameter = rospy.Service(set_name, navi_set_parameter, self.set_navi)
                                 rospy.loginfo(f"{set_name} Service is ready.")
+                            """
 
                             self.client = actionlib.SimpleActionClient(exe_name, executeAction)
                             rospy.loginfo(f'action server {exe_name} start...')

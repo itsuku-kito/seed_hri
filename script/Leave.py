@@ -31,12 +31,11 @@ class LeaveService:
         print(exe_name)
         self.server.start()     
 
-        self.pub = rospy.Publisher(self.robotname + '/completed_command', completed , queue_size=1)
+        self.pub = rospy.Publisher(self.robotname + '/completed_command', completed , queue_size=1,latch=True)
         # self.pub = rospy.Publisher('/completed', String,queue_size=1)
 
         self.motion = rospy.ServiceProxy("/seed_robot_action", RobotAction)
-
-
+        self.move_seed = rospy.ServiceProxy('/leave_seed_noid', MoveCommunication)
 
         self.state = "idle"
 
@@ -45,21 +44,6 @@ class LeaveService:
 
 
         self.playback_thread = None 
-
-    def get_robotfile(self):
-        # 現在のスクリプトの絶対パスを取得
-        current_file_path = os.path.abspath(__file__)
-
-        package_relative_path = current_file_path.split('/src/')[1]
-        catkin_path = current_file_path.split('/src/')[0]
-        package_name = package_relative_path.split('/')[0]
-
-        path = catkin_path +'/src/'+ package_name +"/robot.yaml"
-        
-        with open(path, 'r') as file:
-            data = yaml.safe_load(file)
-
-        return data
 
 
     def set_parameter(self, s_req):
@@ -121,11 +105,14 @@ class LeaveService:
         rospy.loginfo("Monitoring playback.")
 
         try:
-            service = self.motion("leave")
-            print(service.success)
+            #service = self.motion("approach1")
+            service = self.move_seed("")
+            #service.success = True
+            self.state = "OK"
+            #print(service.success)
 
-            if service.success==True:
-                self.state = "OK"
+            #if service.success==True:
+                #self.state = "OK"
 
         except Exception as e:
             print(f"Unexpected error: {e}")
